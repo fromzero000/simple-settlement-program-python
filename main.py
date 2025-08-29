@@ -3,8 +3,9 @@ import time
 
 players: dict = {} #{개별 인원 : 원별 지불해야 할 금액}
 tasks: dict = {} #{지불해야할 건 : 총 금액}
-amounts: list = []
+amounts: dict = {} #추후 지불해야 할 건과 그에 따른 금액을 출력하거나 수정할 때 사용될 금액 리스트
 width = os.get_terminal_size().columns
+
 
 def main():
     print('Settlement Init',end='\r')
@@ -19,7 +20,7 @@ def main():
         else:
             players[name] = 0
 
-    if players.keys() == []:
+    if not players:
         return
     print('Initialized')
     print('players:',end=' ')
@@ -46,18 +47,28 @@ def main():
                     print('input error: player not exists')
                 else:
                     tasks[task].append(member)
-                
-        amount = int(input('\rEnter Amount: '))
-        while input('Is Correct?(Press y to Yes or n to No): ') not in ['Y', 'y','']:
-            print('Retry\r')
-            amount = int(input('\rEnter Amount: '))
+
+        if not tasks[task]:
+            print(f"Warning: No members were added to task '{task}'. This task will be removed.")        
+            del tasks[task]
+            continue
+        
+        while True:
+            try:
+                amount = int(input('\rEnter Amount: '))
+                correct = input('Is Correct? (Y/n): ')
+                if correct.lower() in ['y','']:
+                    break
+            except ValueError:
+                print('input error: amount must be integer')
+        amounts[task] = amount
         split = amount/len(tasks[task])
         for member in tasks[task]:
             players[member] += split
 
 
     for task, members in tasks.items():
-        print(task,': ',members)
+        print(task,': ',members,', ',amounts[task],'원')
 
     bill = "Bill"
     text = bill.center(width,'=')
