@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import datetime
 
 players: dict = {} #{개별 인원 : 원별 지불해야 할 금액}
 tasks: dict = {} #{지불해야할 건 : 총 금액}
@@ -10,6 +11,27 @@ width = os.get_terminal_size().columns
 def main():
     print('Settlement Init',end='\r')
     time.sleep (1)
+    #load
+    while True:
+        file = input('Enter file name if needed(\"yyyymmddhhmmss.txt\"): ')
+        if file != '':
+            try:
+                file = open(file,'r', encoding='utf-8')
+                for line in file:
+                    line = line.strip().split(':')
+                    players[line[0]] = int(line[1])
+                file.close()
+                break
+            except FileNotFoundError:
+                print('input error: file not found')
+                retry = input('Retry?(Y/n): ')
+                if retry.lower() in ['y','']:
+                    continue
+                else:
+                    break
+        else:
+            break
+
     #인원 입력
     while True:
         name = input('\rEnter the player name(Press Enter key to quit): ')
@@ -75,5 +97,15 @@ def main():
     print('\n',text)
     for player in players:
         print(f"{player}: {players[player]:.0f}")
+    while True:
+        save = input('Save the data?(Y/n): ')
+        if save.lower() in ['y','']:
+            now = datetime.now()
+            file = now.strftime('%Y%m%d%H%M%S')+'.txt'
+            with open(file,'w',encoding='utf-8') as file:
+                for player in players:
+                    file.write(f"{player}:{int(players[player])}\n")
+            break
+        return 
 if __name__=="__main__":
     main()
